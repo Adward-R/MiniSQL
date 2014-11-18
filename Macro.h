@@ -1,67 +1,66 @@
 #ifndef _MACRO_H
 #define _MACRO_H
-#define INT 1
-#define FLOAT 2
-#define CHAR 3
-#define INTLENGTH 11
-#define FLOATLENGTH 10
-#define INTLEN		11
-#define FLOATLEN	10
 
-#define ISPRIMARYKEY 1
-#define NOTPRIMARYKEY 0
-#define ISUNIQUE 1
-#define NOTUNIQUE 0
+const int INT = 1;
+const int FLOAT = 2;
+const int CHAR = 3;
+const int INTLENGTH = 11;
+const int FLOATLENGTH = 10;
+const int INTLEN = 11;
+const int FLOATLEN = 10;
 
+const int ISPRIMARYKEY = 1;
+const int NOTPRIMARYKEY = 0;
+const int ISUNIQUE = 1;
+const int NOTUNIQUE = 2;
 
-#define MAXBLOCKNUMBER 1000	//should be 10000
-#define BLOCKSIZE 4096	//should be 4096
-#define EMPTY '@'
-#define END '@'
-#define NOTEMPTY '1'
-#define DELETED '@'
+const int MAXPRIMARYKEYLENGTH = 1000; //should be 10000
+const int BLOCKSIZE = 4096;
+const char EMPTY = '@';
+const char END = '@';
+const char NOTEMPTY = '1';
+const char DELETED = '@';
 
+const int MAXPRIMARYKEYLENGTH = 25; //should change sometime
 
-#define MAXPRIMARYKEYLENGTH  25    //should change sometime
+const int UNKNOW 	 = 12;
+const int SELERR 	 = 13;
+const int CREINDERR  = 14;
+const int DELETEERR  = 15;
+const int INSERTERR  = 16;
+const int DRPTABERR  = 17;
+const int DRPTABERR  = 18;
+const int DRPINDERR  = 19;
+const int EXEFILERR  = 20;
+const int VOIDPRI 	 = 21;
+const int VOIDUNI	 = 22;
+const int CHARBOUD	 = 23;
+const int TABLEERROR = 24;
+const int COLUMNERROR = 25;
+const int INSERTNUMBERERROR = 26;
+const int NOPRIKEY  = 27;
+const int SELECT_WHERE_CAULSE   = 28;
+const int SELECT_NOWHERE_CAULSE = 29;
+const int TABLEEXISTED  = 30;
+const int INDEXERROR	= 31;
+const int INDEXEROR 	= 32;
 
-#define UNKNOW		12
-#define SELERR		13
-#define	CREINDERR	14
-#define CRETABERR	15
-#define DELETEERR	16
-#define INSERTERR	17
-#define DRPTABERR	18
-#define DRPINDERR	19 
-#define EXEFILERR	20
-#define NOPRIKEY    27
-#define VOIDPRI		21
-#define VOIDUNI		22
-#define CHARBOUD    23
-#define TABLEERROR  24
-#define COLUMNERROR 25
-#define INSERTNUMBERERROR 26
-#define SELECT_NOWHERE_CAULSE  29
-#define SELECT_WHERE_CAULSE    28
-#define TABLEEXISTED  30
-#define INDEXERROR    31
-#define INDEXEROR     32
+const int SELECT = 0;
+const int CRETAB = 1;
+const int CREIND = 2;
+const int DRPTAB = 3;
+const int DRPIND = 4;
+const int DELETE = 5;
+const int INSERT = 6;
+const int QUIT   = 7;
+const int EXEFILE= 8;
 
-#define SELECT		0
-#define CRETAB		1
-#define	CREIND		2
-#define	DRPTAB		3
-#define DRPIND		4
-#define DELETE		5
-#define INSERT		6
-#define QUIT		7
-#define EXEFILE		8 
-
-#define COMLEN		400 
-#define INPUTLEN	200 
-#define WORDLEN		100
-#define VALLEN		300
-#define NAMELEN		100
-#define POINTERLENGTH 5
+const int COMLEN   = 400;
+const int INPUTLEN = 200;
+const int WORDLEN  = 100;
+const int VALLEN   = 300;
+const int NAMELEN  = 100;
+const int POINTERLENGTH = 5;
 
 #include <iostream>
 #include <fstream>
