@@ -1,7 +1,5 @@
 #include "Interpreter.h"
 
-void welcome();
-
 //enum Operation{CREATABLE, INSERT, SELECT, DELECT, DROPINDEX, CRETEINDEX, DROPTABLE, ERROR};
 //Interpreter interprt; 
 RecordManager record;
@@ -10,7 +8,192 @@ CatalogManager catalog;
 Interpreter parsetree;
 BufferManager buf;
 
+void welcome();
 void ShowResult(Data data, Table tableinfor, vector<Attribute> column);
+void Execute();
+void AddSeperator(char *command);
+short int IsComEnd(char *input);
+
+
+
+int main()
+{
+	welcome();
+	vector<Condition> conditions;
+	Table tableinfor;
+	Index indexinfor;
+	Row insertValue;
+	Data datas;
+	char command[COMLEN] = "";
+	char input[INPUTLEN] = "";
+	char word[WORDLEN] = "";
+	short int ComEnd = 0;
+	/*FILE *stream;
+	stream=freopen("instruction10.txt","r",stdin);*/
+	/*FILE *fileout;
+	fileout=freopen("result.txt","w",stdout);*/
+
+	//int count = 0;
+	while(1)
+	{
+		strcpy(command, "");//command����
+		ComEnd = 0;
+		cout<<" Adward's Database >>";
+ 		while(!ComEnd)
+		{
+	/*		count ++;
+			if(count % 100 == 0)
+				cout << count/100 << "%" << endl;*/
+			gets(input);
+			if(IsComEnd(input))
+				ComEnd = 1;
+				strcat(command, input);
+			AddSeperator(command);
+		}
+		parsetree.Parse(command);
+		Execute();
+	}
+	getchar();
+	return 0;
+}
+
+void welcome(){
+	cout << "____Welcome to our micro database system____" << endl;
+}
+
+void ShowResult(Data data, Table tableinfor, vector<Attribute> column){
+	if(column[0].name == "*"){
+		cout << endl <<"+";
+		for(int i = 0; i < tableinfor.attriNum; i++){
+			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+		cout << "| ";
+		for(int i = 0; i < tableinfor.attriNum; i++){
+			cout << tableinfor.attributes[i].name;
+			int lengthLeft = tableinfor.attributes[i].length - tableinfor.attributes[i].name.length();
+			for(int j = 0; j < lengthLeft; j++){
+				cout << ' ';
+			}
+			cout << "| ";
+		}
+		cout << endl;
+		cout << "+";
+		for(int i = 0; i < tableinfor.attriNum; i++){
+			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+
+		//����
+		for(int i = 0; i < data.rows.size(); i++){
+			cout << "| ";
+			for(int j = 0; j < tableinfor.attriNum; j++){
+				int lengthLeft = tableinfor.attributes[j].length;
+				for(int k =0; k < data.rows[i].columns[j].length(); k++){
+					if(data.rows[i].columns[j].c_str()[k] == EMPTY) break;
+					else{
+						cout << data.rows[i].columns[j].c_str()[k];
+						lengthLeft--;
+					}
+				}
+				for(int k = 0; k < lengthLeft; k++) cout << " ";
+				cout << "| ";
+			}
+			cout << endl;
+		}
+
+		cout << "+";
+		for(int i = 0; i < tableinfor.attriNum; i++){
+			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+	}
+	else{
+		cout << endl <<"+";
+		for(int i = 0; i < column.size(); i++){
+			int col;
+			for(col = 0; col < tableinfor.attributes.size(); col++){
+				if(tableinfor.attributes[col].name == column[i].name) break;
+			}
+			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+		cout << "| ";
+		for(int i = 0; i < column.size(); i++){
+			int col;
+			for(col = 0; col < tableinfor.attributes.size(); col++){
+				if(tableinfor.attributes[col].name == column[i].name) break;
+			}
+			cout << tableinfor.attributes[col].name;
+			int lengthLeft = tableinfor.attributes[col].length - tableinfor.attributes[col].name.length();
+			for(int j = 0; j < lengthLeft; j++){
+				cout << ' ';
+			}
+			cout << "| ";
+		}
+		cout << endl;
+		cout << "+";
+		for(int i = 0; i < column.size(); i++){
+			int col;
+			for(col = 0; col < tableinfor.attributes.size(); col++){
+				if(tableinfor.attributes[col].name == column[i].name) break;
+			}
+			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+
+		//����
+		for(int i = 0; i < data.rows.size(); i++){
+			cout << "| ";
+			for(int j = 0; j < column.size(); j++){
+				int col;
+				for(col = 0; col < tableinfor.attributes.size(); col++){
+					if(tableinfor.attributes[col].name == column[j].name) break;
+				}
+				int lengthLeft = tableinfor.attributes[col].length;
+				for(int k =0; k < data.rows[i].columns[col].length(); k++){
+					if(data.rows[i].columns[col].c_str()[k] == EMPTY) break;
+					else{
+						cout << data.rows[i].columns[col].c_str()[k];
+						lengthLeft--;
+					}
+				}
+				for(int k = 0; k < lengthLeft; k++) cout << " ";
+				cout << "| ";
+			}
+			cout << endl;
+		}
+
+		cout << "+";
+		for(int i = 0; i < column.size(); i++){
+			int col;
+			for(col = 0; col < tableinfor.attributes.size(); col++){
+				if(tableinfor.attributes[col].name == column[i].name) break;
+			}
+			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
+				cout << "-";
+			}
+			cout << "+";
+		}
+		cout << endl;
+	}
+	cout << data.rows.size() << " rows have been found."<< endl;
+}
 void Execute()
 {	
 	int i;
@@ -196,7 +379,6 @@ void Execute()
 	}
 	
 }
-
 void AddSeperator(char *command)
 {
 	unsigned len = strlen(command);
@@ -219,185 +401,4 @@ short int IsComEnd(char *input)
 		return 1;
 	}
 	return 0;
-}
-
-
-
-int main()
-{
-	welcome();
-	vector<Condition> conditions;
-	Table tableinfor;
-	Index indexinfor;
-	Row insertValue;
-	Data datas;
-	char command[COMLEN] = "";
-	char input[INPUTLEN] = "";
-	char word[WORDLEN] = "";
-	short int ComEnd = 0;
-	/*FILE *stream;
-	stream=freopen("instruction10.txt","r",stdin);*/
-	/*FILE *fileout;
-	fileout=freopen("result.txt","w",stdout);*/
-
-	//int count = 0;
-	while(1)
-	{
-		strcpy(command, "");//command����
-		ComEnd = 0;
-		cout<<" Adward's Database >>";
- 		while(!ComEnd)
-		{
-	/*		count ++;
-			if(count % 100 == 0)
-				cout << count/100 << "%" << endl;*/
-			gets(input);
-			if(IsComEnd(input))
-				ComEnd = 1;
-				strcat(command, input);
-			AddSeperator(command);
-		}
-		parsetree.Parse(command);
-		Execute();
-	}
-	getchar();
-	return 0;
-}
-
-void welcome(){
-	cout << "____Welcome to our micro database system____" << endl;
-}
-
-void ShowResult(Data data, Table tableinfor, vector<Attribute> column){
-	if(column[0].name == "*"){
-		cout << endl <<"+";
-		for(int i = 0; i < tableinfor.attriNum; i++){
-			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-		cout << "| ";
-		for(int i = 0; i < tableinfor.attriNum; i++){
-			cout << tableinfor.attributes[i].name;
-			int lengthLeft = tableinfor.attributes[i].length - tableinfor.attributes[i].name.length();
-			for(int j = 0; j < lengthLeft; j++){
-				cout << ' ';
-			}
-			cout << "| ";
-		}
-		cout << endl;
-		cout << "+";
-		for(int i = 0; i < tableinfor.attriNum; i++){
-			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-
-		//����
-		for(int i = 0; i < data.rows.size(); i++){
-			cout << "| ";
-			for(int j = 0; j < tableinfor.attriNum; j++){
-				int lengthLeft = tableinfor.attributes[j].length;
-				for(int k =0; k < data.rows[i].columns[j].length(); k++){
-					if(data.rows[i].columns[j].c_str()[k] == EMPTY) break;
-					else{
-						cout << data.rows[i].columns[j].c_str()[k];
-						lengthLeft--;
-					}
-				}
-				for(int k = 0; k < lengthLeft; k++) cout << " ";
-				cout << "| ";
-			}
-			cout << endl;
-		}
-
-		cout << "+";
-		for(int i = 0; i < tableinfor.attriNum; i++){
-			for(int j = 0; j < tableinfor.attributes[i].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-	}
-	else{
-		cout << endl <<"+";
-		for(int i = 0; i < column.size(); i++){
-			int col;
-			for(col = 0; col < tableinfor.attributes.size(); col++){
-				if(tableinfor.attributes[col].name == column[i].name) break;
-			}
-			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-		cout << "| ";
-		for(int i = 0; i < column.size(); i++){
-			int col;
-			for(col = 0; col < tableinfor.attributes.size(); col++){
-				if(tableinfor.attributes[col].name == column[i].name) break;
-			}
-			cout << tableinfor.attributes[col].name;
-			int lengthLeft = tableinfor.attributes[col].length - tableinfor.attributes[col].name.length();
-			for(int j = 0; j < lengthLeft; j++){
-				cout << ' ';
-			}
-			cout << "| ";
-		}
-		cout << endl;
-		cout << "+";
-		for(int i = 0; i < column.size(); i++){
-			int col;
-			for(col = 0; col < tableinfor.attributes.size(); col++){
-				if(tableinfor.attributes[col].name == column[i].name) break;
-			}
-			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-
-		//����
-		for(int i = 0; i < data.rows.size(); i++){
-			cout << "| ";
-			for(int j = 0; j < column.size(); j++){
-				int col;
-				for(col = 0; col < tableinfor.attributes.size(); col++){
-					if(tableinfor.attributes[col].name == column[j].name) break;
-				}
-				int lengthLeft = tableinfor.attributes[col].length;
-				for(int k =0; k < data.rows[i].columns[col].length(); k++){
-					if(data.rows[i].columns[col].c_str()[k] == EMPTY) break;
-					else{
-						cout << data.rows[i].columns[col].c_str()[k];
-						lengthLeft--;
-					}
-				}
-				for(int k = 0; k < lengthLeft; k++) cout << " ";
-				cout << "| ";
-			}
-			cout << endl;
-		}
-
-		cout << "+";
-		for(int i = 0; i < column.size(); i++){
-			int col;
-			for(col = 0; col < tableinfor.attributes.size(); col++){
-				if(tableinfor.attributes[col].name == column[i].name) break;
-			}
-			for(int j = 0; j < tableinfor.attributes[col].length + 1; j++){
-				cout << "-";
-			}
-			cout << "+";
-		}
-		cout << endl;
-	}
-	cout << data.rows.size() << " rows have been found."<< endl;
 }

@@ -14,7 +14,7 @@ const int NOTPRIMARYKEY = 0;
 const int ISUNIQUE = 1;
 const int NOTUNIQUE = 2;
 
-const int MAXPRIMARYKEYLENGTH = 1000; //should be 10000
+const int MAXBLOCKNUMBER = 1000; //should be 10000
 const int BLOCKSIZE = 4096;
 const char EMPTY = '@';
 const char END = '@';
@@ -28,7 +28,7 @@ const int SELERR 	 = 13;
 const int CREINDERR  = 14;
 const int DELETEERR  = 15;
 const int INSERTERR  = 16;
-const int DRPTABERR  = 17;
+const int CRETABERR  = 17;
 const int DRPTABERR  = 18;
 const int DRPINDERR  = 19;
 const int EXEFILERR  = 20;
