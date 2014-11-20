@@ -44,7 +44,7 @@ int main()
 	/*		count ++;
 			if(count % 100 == 0)
 				cout << count/100 << "%" << endl;*/
-			gets(input);
+			cin.getline(input,1000);//gets(input);
 			if(IsComEnd(input))
 				ComEnd = 1;
 				strcat(command, input);

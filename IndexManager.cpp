@@ -245,23 +245,21 @@ void IndexManager::createIndex(const Table& tableinfor, Index& indexinfor){
     buf.bufferBlock[blockNum].blockOffset = 0;
     buf.bufferBlock[blockNum].isWritten = 1;
     buf.bufferBlock[blockNum].isValid = 1;
-    buf.bufferBlock[blockNum].values[0] = 'R';//block�ĵ�һλ����Ƿ��Ǹ� 
-    buf.bufferBlock[blockNum].values[1] = 'L';//block�ĵڶ�λ����Ƿ���Ҷ�ڵ�
-    //�������λ������ڵ��ж������¼��һ��block����ļ�¼������ᳬ��9999��ɣ� 
-    memset( buf.bufferBlock[blockNum].values + 2, '0' , 4);//���ڼ�¼����Ϊ�� 
-    //�����3*LENGTHBlockPtrλ������ָ�룬һ��ָ�룬����ֵ�ָ��
-    for(int i = 0; i < 3; i++)
-    memset( buf.bufferBlock[blockNum].values+6 + POINTERLENGTH*i, '0' , POINTERLENGTH);
-    indexinfor.blockNum++;
-		
+    buf.bufferBlock[blockNum].values[0] = 'R';//Root Node Block
+    buf.bufferBlock[blockNum].values[1] = 'L';//Leaf Node Block
+    memset( buf.bufferBlock[blockNum].values + 2, '0' , 4);
+    for (int i = 0; i < 3; i++){
+        memset( buf.bufferBlock[blockNum].values+6 + POINTERLENGTH*i, '0' , POINTERLENGTH);
+        indexinfor.blockNum++;
+    }
     //retrieve datas of the table and form a B+ Tree
     filename = tableinfor.name + ".table";
     string stringrow;
     string key;
 
-    int length = tableinfor.totalLength + 1;//�Ӷ�һλ��ж������¼�Ƿ�ɾ����
+    int length = tableinfor.totalLength + 1;
     const int recordNum = BLOCKSIZE / length;
-		
+
     //read datas from the record and sort it into a B+ Tree and store it
     for(int blockOffset = 0; blockOffset < tableinfor.blockNum; blockOffset++){
         int bufferNum = buf.getIfIsInBuffer(filename, blockOffset);
@@ -273,7 +271,7 @@ void IndexManager::createIndex(const Table& tableinfor, Index& indexinfor){
             int position  = offset * length;
             stringrow = buf.bufferBlock[bufferNum].getvalues(position, position + length);
             if(stringrow.c_str()[0] == EMPTY) continue;//inticate that this row of record have been deleted
-            stringrow.erase(stringrow.begin());	//�ѵ�һλȥ��
+            stringrow.erase(stringrow.begin());
             key = getColumnValue(tableinfor, indexinfor, stringrow);
             IndexLeaf node(key, blockOffset, offset);
             insertValue(indexinfor, node);
@@ -289,18 +287,17 @@ IndexBranch IndexManager::insertValue(Index& indexinfor, IndexLeaf node, int blo
     if(isLeaf){
         Leaf leaf(bufferNum, indexinfor);
         leaf.insert(node);
-
-        //�ж��Ƿ�Ҫ����
+        
         const int RecordLength = indexinfor.columnLength + POINTERLENGTH*2;
         const int MaxrecordNum = (BLOCKSIZE-6-POINTERLENGTH*3)/RecordLength;
         if( leaf.recordNum > MaxrecordNum ){//record number is too great, need to split
             if(leaf.isRoot){//this leaf is a root
                 int rbufferNum = leaf.bufferNum;	// buffer number for new root
                 leaf.bufferNum = buf.addBlockInFile(indexinfor);	//find a new place for old leaf
-                int sbufferNum = buf.addBlockInFile(indexinfor);	// buffer number for sibling 
+                int sbufferNum = buf.addBlockInFile(indexinfor);	// buffer number for sibling
                 Branch branchRoot(rbufferNum);	//new root, which is branch indeed
                 Leaf leafadd(sbufferNum);	//sibling
-					
+
                 //is root
                 branchRoot.isRoot = 1;
                 leafadd.isRoot = 0;
@@ -358,20 +355,20 @@ IndexBranch IndexManager::insertValue(Index& indexinfor, IndexLeaf node, int blo
     else{//not a leaf
         Branch branch(bufferNum, indexinfor);
         list<IndexBranch>::iterator i = branch.nodelist.begin();
-        if((*i).key > node.key){	//����²����ֵ������ߵĻ�ҪС
-            (*i).key = node.key;	//�͸�������ߵ�ֵ
+        if((*i).key > node.key){
+            (*i).key = node.key;
         }
         else{
             for(i = branch.nodelist.begin(); i != branch.nodelist.end(); i++)
             if((*i).key > node.key) break;
-            i--;//�õ�(*i) ��ߵ�ָ���λ��
+            i--;
         }
         IndexBranch bnode = insertValue(indexinfor, node, (*i).ptrChild);//go down
 			
         if(bnode.key == ""){
             return reBranch;
         }
-        else{//bnode.key != "", ˵��ײ��B��췢����split�����ѣ���Ҫ�����Ӧ�Ĳ���
+        else{//bnode.key != "",need to split up
             branch.insert(bnode);
             const int RecordLength = indexinfor.columnLength + POINTERLENGTH;
             const int MaxrecordNum = (BLOCKSIZE-6-POINTERLENGTH) / RecordLength;
@@ -441,11 +438,11 @@ Data IndexManager::selectEqual(const Table& tableinfor, const Index& indexinfor,
         for(i = leaf.nodelist.begin(); i!= leaf.nodelist.end(); i++)
         if((*i).key == key){
             filename = indexinfor.table_name + ".table";
-            int recordBufferNum = buf.getbufferNum(filename, (*i).offsetInFile);//�Ѽ�¼���buffer
+            int recordBufferNum = buf.getbufferNum(filename, (*i).offsetInFile);
             int position = (tableinfor.totalLength +1)* ((*i).offsetInBlock);
             string stringrow = buf.bufferBlock[recordBufferNum].getvalues(position, position + tableinfor.totalLength);
             if(stringrow.c_str()[0] != EMPTY){
-                stringrow.erase(stringrow.begin());//�ѵ�һλȥ��
+                stringrow.erase(stringrow.begin());
                 Row splitedRow = splitRow(tableinfor, stringrow);
                 datas.rows.push_back(splitedRow);
                 return datas;
@@ -482,11 +479,11 @@ Data IndexManager::selectBetween(const Table& tableinfor, const Index& indexinfo
                         return datas;
                     }
                     filename = indexinfor.table_name + ".table";
-                    int recordBufferNum = buf.getbufferNum(filename, (*i).offsetInFile);//�Ѽ�¼���buffer
+                    int recordBufferNum = buf.getbufferNum(filename, (*i).offsetInFile);
                     int position = (tableinfor.totalLength +1)* ((*i).offsetInBlock);
                     string stringrow = buf.bufferBlock[recordBufferNum].getvalues(position, position + tableinfor.totalLength);
                     if(stringrow.c_str()[0] != EMPTY){
-                        stringrow.erase(stringrow.begin());//�ѵ�һλȥ��
+                        stringrow.erase(stringrow.begin());
                         Row splitedRow = splitRow(tableinfor, stringrow);
                         datas.rows.push_back(splitedRow);
                     }
@@ -502,11 +499,11 @@ Data IndexManager::selectBetween(const Table& tableinfor, const Index& indexinfo
     else{//not leaf, go down to the leaf
         Branch branch(bufferNum, indexinfor);
         list<IndexBranch>::iterator i = branch.nodelist.begin();
-        if((*i).key > keyFrom){//���keyFrom ����С�ļ�ֵ��ҪС����������߿�ʼ����ȥ
+        if((*i).key > keyFrom){
             datas = selectBetween(tableinfor, indexinfor, keyFrom, keyTo, (*i).ptrChild);
             return datas;
         }
-        else{//����ͽ���ѭ�����ҵ����
+        else{
             for(i = branch.nodelist.begin(); i != branch.nodelist.end(); i++){
                 if((*i).key > keyFrom){
                     i--;//�õ�(*i) ��ߵ�ָ���λ��
