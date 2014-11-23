@@ -1,0 +1,64 @@
+
+抽象的B+树接口类：BPlusTree
+包括数据对象：
+	bool isRoot; 指示该结点是否是B+树的根
+	int bufferNum; 指示缓存块号
+	int ptrFather;	指示父结点块号，即作指针用
+	int recordNum; 本结点的块号
+	int columnLength;  结构体数据对象Index中columnLength的转存
+包括成员函数：
+	BPlusTree(int vbufNum); 构造函数
+	int getPtr(int pos); 获得pos位置所对应的节点指针
+	int getRecordNum();  获得总的index记录数量（不是结点数量）
+};
+
+2. 继承自BPlusTree的非叶结点类：Branch
+包括数据对象：
+	list<IndexBranch> nodelist; 装载IndexBranch类的列表容器
+包括成员函数：
+	Branch(int vbufNum); 新增加内部节点（一般是分裂）时调用的构造函数
+	Branch(int vbufNum, const Index& indexinfor);
+	~Branch(); 析构函数，该索引结点被移除时调用
+	void insert(IndexBranch node); 根据IndexBranch对象中提供的数据在索引中增添一项
+	IndexBranch pop(); 获取该内部节点列表中最后一个IndexBranch的数据并将其移除
+            IndexBranch getfront(); 获取该内部节点列表中首个IndexBranch对象的数据
+
+3. 继承自BPlusTree的叶子节点类：Leaf
+包括数据对象：
+	int nextSibling; 指向右侧兄弟结点（索引块）的块指针
+	int lastSibling;	指向最后一个结点（索引块）的块指针
+	list<IndexLeaf> nodelist; 装载IndexLeaf类的列表容器
+包括成员函数：
+	Leaf(int vbufNum); 需要分裂叶子结点时调用的构造函数
+	Leaf(int vbufNum, const Index& indexinfor); 类似于拷贝构造函数，从indexinfor读取关于索引的MetaData后创建叶子结点
+	~Leaf(); 析构函数，该叶子结点被删除时调用
+	void insert(IndexLeaf node); 将一个IndexLeaf类型的结构体数据插入索引中
+    	IndexLeaf pop(); 获取该叶子节点列表中最后一个IndexLeaf的数据并将其移除
+	IndexLeaf getfront(); 获取该叶子节点头上IndexLeaf对象的数据
+
+以上三个类都属于抽象的容器类，用以维护索引B+树的结构，具体的数据项都存储在以下两个类中。
+
+4. 叶子结点数据项类：IndexLeaf
+包括数据对象：
+	string key; 索引关键字
+	int offsetInFile; 块在文件中的偏移量
+	int offsetInBlock; 被索引的Record项目在Block中的偏移量
+包括成员函数：有初始数据提供的和默认初始化的两个构造函数，默认析构函数
+
+5. 内部结点数据项类：IndexBranch
+包括数据对象：
+	string key; 索引关键字
+	int ptrChild; 孩子结点的块号，即指针
+包括成员函数：有初始数据提供的和默认初始化的两个构造函数，默认析构函数
+
+6. 模块抽象类：IndexManager
+提供一系列函数接口供API调用：
+	string getColumnValue(const Table& tableinfor, const Index& indexinfor, string row);
+		根据Catalog中的MetaData确定索引所在的列号
+	void createIndex(const Table& tableinfor, Index& indexinfor); 建索引函数接口
+	IndexBranch insertValue(Index& indexinfor, IndexLeaf node, int blockOffset = 0); 
+		插值后更新索引的函数接口
+	Data selectEqual(const Table& tableinfor, const Index& indexinfor, string key, int blockOffset = 0); 利用索引查找相应单个数据项的函数接口
+	Data selectBetween(const Table& tableinfor, const Index& indexinfor, string keyFrom, string keyTo, int blockOffset = 0); 利用索引查找满足值区间的一批数据项的函数接口
+	Row splitRow(Table tableinfor, string row); 给RecordManager的select语句执行调用的接口，将某行中的属性按照语句中选择的显示属性进行筛选
+	void dropIndex(Index& indexinfor); 删除索引的函数接口
