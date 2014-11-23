@@ -13,6 +13,7 @@ int BPlusTree::getRecordNum(){
         if(buf.bufferBlock[bufferNum].values[i] == EMPTY) break;
         recordNum = 10 * recordNum + buf.bufferBlock[bufferNum].values[i] - '0';
     }
+    cout<<"RecordNum: "<<recordNum<<endl;
     return recordNum;
 }
 
